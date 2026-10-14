@@ -5,6 +5,9 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -45,8 +48,21 @@ jobs:
         run: |
           gradle assembleDebug --no-daemon
 
+      - name: Publish Direct APK to Repo Root
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk ./盛夏光年_直接下载安装.apk
+          gh release create latest ./盛夏光年_直接下载安装.apk --title "盛夏光年最新版 APK" --notes "直接点击下方 .apk 文件即可下载安装，无需解压！" --clobber || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f ./盛夏光年_直接下载安装.apk
+          git commit -m "Update 盛夏光年_直接下载安装.apk [skip ci]" || true
+          git push || true
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ShengXiaGuangNian-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          compression-level: 0
