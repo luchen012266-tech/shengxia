@@ -12,14 +12,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Unpack ZIP and Fix Line 53
+      - name: Unpack Latest ZIP & Auto-Increment Version
         run: |
-          for z in *.zip; do
-            if [ -f "$z" ]; then
-              unzip -o "$z"
-            fi
-          done
+          LATEST_ZIP=$(ls -1 *.zip | sort -V | tail -n 1)
+          echo "Unpacking latest archive: $LATEST_ZIP"
+          unzip -o "$LATEST_ZIP"
           sed -i '53d' app/src/main/java/com/shengxiaguangnian/ime/EmojiKaomojiData.kt
+          sed -i "s/versionCode [0-9]*/versionCode $((100 + ${{ github.run_number }}))/g" app/build.gradle
+
+      - name: Install Permanent Signing Keystore
+        run: |
+          mkdir -p ~/.android
+          echo "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" | base64 -d > ~/.android/debug.keystore
 
       - name: Fetch Full 86 Wubi Dictionary
         run: |
