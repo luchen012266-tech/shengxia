@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-
 concurrency:
   group: build-apk-group
   cancel-in-progress: true
