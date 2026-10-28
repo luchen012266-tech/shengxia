@@ -25,6 +25,20 @@ jobs:
       - name: Fetch & Pre-Compile 86 Wubi + Pinyin + English Dictionaries
         run: |
           python3 scripts/fetch_full_dict.py
+      - name: Fetch Sherpa-ONNX Native Lib & Offline Model
+        run: |
+          mkdir -p app/libs app/src/main/assets/sherpa_model
+          echo "Downloading official sherpa-onnx 2.0.1 AAR..."
+          curl -L -o app/libs/sherpa-onnx.aar https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-2.0.1.aar
+          echo "Downloading streaming zipformer offline model..."
+          curl -L -o /tmp/model.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-zh-14M-2023-02-23-mobile.tar.bz2
+          tar -xjf /tmp/model.tar.bz2 -C /tmp/
+          MDIR=$(find /tmp/ -maxdepth 1 -type d -name "*zipformer*" | head -n 1)
+          cp "$MDIR/tokens.txt" app/src/main/assets/sherpa_model/
+          cp "$MDIR/encoder-epoch-99-avg-1.int8.onnx" app/src/main/assets/sherpa_model/encoder.onnx
+          cp "$MDIR/decoder-epoch-99-avg-1.onnx" app/src/main/assets/sherpa_model/decoder.onnx
+          cp "$MDIR/joiner-epoch-99-avg-1.int8.onnx" app/src/main/assets/sherpa_model/joiner.onnx
+          echo "Sherpa offline voice dependencies successfully assembled!"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
